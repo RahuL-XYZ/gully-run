@@ -1,12 +1,13 @@
 """
 utils.py
-Helper functions shared across modules.
+Helper functions and procedural 3D mesh generators for Gully Run.
 """
 from __future__ import annotations
 
-from panda3d.core import GeomNode, Geom, GeomVertexFormat, GeomVertexData
-from panda3d.core import GeomVertexWriter, GeomTriangles, NodePath
-from panda3d.core import LColor, LPoint3
+from panda3d.core import (
+    GeomNode, Geom, GeomVertexFormat, GeomVertexData,
+    GeomVertexWriter, GeomTriangles, NodePath,
+)
 
 
 def lerp(a: float, b: float, t: float) -> float:
@@ -27,45 +28,47 @@ def make_box(
     color: tuple[float, float, float, float],
 ) -> NodePath:
     """
-    Build a solid coloured axis-aligned box geometry centred on X/Y,
-    with its bottom at Z=0.
+    Build a solid colored axis-aligned 3D box geometry centered on X/Y,
+    with its base at Z=0. Normals are generated for proper directional shading.
 
-    w = half-extent in X
-    d = half-extent in Y
+    w = half-extent in X (width / 2)
+    d = half-extent in Y (depth / 2)
     h = full height in Z
     """
-    fmt = GeomVertexFormat.get_v3c4()
+    fmt = GeomVertexFormat.get_v3n3c4()
     vdata = GeomVertexData(name, fmt, Geom.UH_static)
     vdata.set_num_rows(24)
 
     vertex = GeomVertexWriter(vdata, "vertex")
+    normal = GeomVertexWriter(vdata, "normal")
     colour = GeomVertexWriter(vdata, "color")
 
     r, g, b, a = color
 
-    # 6 faces × 4 vertices
+    # (face_vertices, face_normal)
     faces = [
-        # bottom  (z=0)
-        [(-w, -d, 0), (w, -d, 0), (w, d, 0), (-w, d, 0)],
-        # top
-        [(-w, -d, h), (w, -d, h), (w, d, h), (-w, d, h)],
-        # front (y = -d)
-        [(-w, -d, 0), (w, -d, 0), (w, -d, h), (-w, -d, h)],
-        # back  (y = +d)
-        [(w, d, 0), (-w, d, 0), (-w, d, h), (w, d, h)],
-        # left  (x = -w)
-        [(-w, d, 0), (-w, -d, 0), (-w, -d, h), (-w, d, h)],
-        # right (x = +w)
-        [(w, -d, 0), (w, d, 0), (w, d, h), (w, -d, h)],
+        # Bottom (z = 0)
+        ([(-w, -d, 0), (w, -d, 0), (w, d, 0), (-w, d, 0)], (0, 0, -1)),
+        # Top (z = h)
+        ([(-w, -d, h), (w, -d, h), (w, d, h), (-w, d, h)], (0, 0, 1)),
+        # Front (-Y)
+        ([(-w, -d, 0), (w, -d, 0), (w, -d, h), (-w, -d, h)], (0, -1, 0)),
+        # Back (+Y)
+        ([(w, d, 0), (-w, d, 0), (-w, d, h), (w, d, h)], (0, 1, 0)),
+        # Left (-X)
+        ([(-w, d, 0), (-w, -d, 0), (-w, -d, h), (-w, d, h)], (-1, 0, 0)),
+        # Right (+X)
+        ([(w, -d, 0), (w, d, 0), (w, d, h), (w, -d, h)], (1, 0, 0)),
     ]
 
     tris = GeomTriangles(Geom.UH_static)
     vi = 0
-    for face in faces:
-        for x, y, z in face:
+    for face_verts, (nx, ny, nz) in faces:
+        for x, y, z in face_verts:
             vertex.add_data3(x, y, z)
+            normal.add_data3(nx, ny, nz)
             colour.add_data4(r, g, b, a)
-        # two triangles per quad
+        # Two triangles per quad
         tris.add_vertices(vi, vi + 1, vi + 2)
         tris.add_vertices(vi, vi + 2, vi + 3)
         vi += 4
@@ -76,7 +79,9 @@ def make_box(
     node = GeomNode(name)
     node.add_geom(geom)
 
-    return NodePath(node)
+    np = NodePath(node)
+    np.set_two_sided(True)
+    return np
 
 
 def make_flat_quad(
@@ -84,7 +89,10 @@ def make_flat_quad(
     w: float,
     d: float,
     color: tuple[float, float, float, float],
+    depth_offset: int = 0,
 ) -> NodePath:
-    """Flat XY quad at Z=0, centred, w×d."""
-    return make_box(name, w / 2, d / 2, 0.001, color)
-
+    """Flat horizontal quad at Z=0, centered, w x d."""
+    np = make_box(name, w / 2, d / 2, 0.005, color)
+    if depth_offset != 0:
+        np.set_depth_offset(depth_offset)
+    return np

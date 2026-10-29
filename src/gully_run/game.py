@@ -6,71 +6,82 @@ from __future__ import annotations
 
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
-from panda3d.core import LColor, WindowProperties
+from panda3d.core import WindowProperties, NodePath
 
 from . import constants as C
-from .player    import Player
-from .road      import RoadManager
-from .camera    import FollowCamera
+from .player import Player
+from .road import RoadManager
+from .camera import FollowCamera
 from .obstacles import ObstacleManager
-from .police    import Police
-from .hud       import HUD
-from .lighting  import setup_lighting
+from .police import Police
+from .hud import HUD
+from .lighting import LightingManager
 
 
 class GullyRun(ShowBase):
-    """Top-level game application."""
+    """
+    Top-level Panda3D game application for Gully Run.
+    Orchestrates the game loop, input handling, physics updates,
+    collision detection, camera tracking, and game-over state.
+    """
 
     def __init__(self) -> None:
         super().__init__()
 
-        # ── Window ──────────────────────────────────────────────────────────
+        # ── Window Setup ───────────────────────────────────────────────────
         props = WindowProperties()
         props.set_title(C.WINDOW_TITLE)
         props.set_size(C.WIN_W, C.WIN_H)
         self.win.request_properties(props)
 
         self.set_background_color(*C.COL_BG)
-
-        # Disable default mouse-look
         self.disable_mouse()
 
-        # ── Scene ───────────────────────────────────────────────────────────
-        setup_lighting(self.render)
+        # ── Hardware Shaders & Dynamic Shadows ─────────────────────────────
+        self.render.set_shader_auto()
 
+        # ── Persistent Scene & Lighting ────────────────────────────────────
+        self._lighting = LightingManager(self.render)
+        self.world_root = self.render.attach_new_node("world_root")
+
+        # ── 2D Interface ───────────────────────────────────────────────────
+        self._hud = HUD()
+
+        # ── Build Initial Gameplay World ───────────────────────────────────
         self._build_world()
 
-        # ── Key bindings ────────────────────────────────────────────────────
-        self.accept("escape",      self._on_escape)
-        self.accept("a",           self._on_left)
-        self.accept("arrow_left",  self._on_left)
-        self.accept("d",           self._on_right)
+        # ── Key Bindings ───────────────────────────────────────────────────
+        self.accept("escape", self._on_escape)
+        self.accept("a", self._on_left)
+        self.accept("arrow_left", self._on_left)
+        self.accept("d", self._on_right)
         self.accept("arrow_right", self._on_right)
-        self.accept("space",       self._on_jump)
-        self.accept("r",           self._on_restart)
+        self.accept("space", self._on_jump)
+        self.accept("r", self._on_restart)
 
-        # ── State ───────────────────────────────────────────────────────────
-        self._game_over = False
-
-        # ── Main update task ────────────────────────────────────────────────
-        self.task_mgr.add(self._update, "update")
+        # ── Main Game Loop Task ────────────────────────────────────────────
+        self.task_mgr.add(self._update, "gully_run_update")
 
     # ---------------------------------------------------------------- world build
 
     def _build_world(self) -> None:
-        """(Re-)construct all game objects."""
-        # Clear any previous scene children except lights/camera
-        self.render.node().remove_all_children()
-        setup_lighting(self.render)
+        """Initialize or reset all gameplay entities under world_root."""
+        # Clean up any existing entities under world_root
+        if hasattr(self, "world_root") and not self.world_root.is_empty():
+            self.world_root.remove_node()
 
-        self._player    = Player(self.render)
-        self._road      = RoadManager(self.render)
-        self._obstacles = ObstacleManager(self.render)
-        self._police    = Police(self.render, self._player.y)
-        self._follow_cam = FollowCamera(self.camera, self._player.node)
-        self._hud        = HUD()
-        self._score      = 0
-        self._game_over  = False
+        self.world_root = self.render.attach_new_node("world_root")
+
+        # Instantiate modular game components
+        self._player = Player(self.world_root)
+        self._road = RoadManager(self.world_root)
+        self._obstacles = ObstacleManager(self.world_root)
+        self._police = Police(self.world_root, self._player.y, self._player.target_x)
+        self._follow_cam = FollowCamera(self.camera, self._player.root)
+
+        self._score = 0
+        self._game_over = False
+        self._hud.hide_gameover()
 
     # ---------------------------------------------------------------- input
 
@@ -91,41 +102,46 @@ class GullyRun(ShowBase):
 
     def _on_restart(self) -> None:
         if self._game_over:
-            self._hud.destroy()
             self._build_world()
 
-    # ---------------------------------------------------------------- main loop
+    # ---------------------------------------------------------------- game loop
 
     def _update(self, task: Task) -> int:
+        dt = globalClock.get_dt()
+        dt = min(dt, 0.05)  # Cap delta time to prevent physics tunnels on lag spikes
+
         if self._game_over:
+            # During game over, pursuer catches the stopped runner
+            self._police.catch_player(self._player.y, dt)
             return Task.cont
 
-        dt = globalClock.get_dt()
-        dt = min(dt, 0.05)           # clamp to avoid physics tunnelling on lag
-
-        # Update gameplay objects
+        # 1. Update Player movement and physics
         self._player.update(dt)
+
+        # 2. Update Endless Road recycling
         self._road.update(self._player.y)
+
+        # 3. Update Obstacles
         self._obstacles.update(self._player.y)
-        self._police.update(dt, self._player.y, self._player.run_speed)
 
-        # Score = distance in whole metres
-        self._score = int(self._player.y * C.SCORE_PER_METER)
+        # 4. Update Police Pursuer
+        self._police.update(dt, self._player.y, self._player.root.get_x())
 
-        # Camera
+        # 5. Update Lighting / Shadow position tracking
+        self._lighting.update(self._player.y)
+
+        # 6. Update Score (Distance traveled in meters)
+        self._score = max(0, int(self._player.y * C.SCORE_PER_METER))
+
+        # 7. Update Follow Camera
         self._follow_cam.update(dt)
 
-        # Police catch distance
-        pd = self._police.distance_to_player(self._player.y)
+        # 8. Check Pursuer proximity & update HUD
+        police_dist = self._police.distance_to_player(self._player.y)
+        self._hud.update(self._score, self._player.run_speed, police_dist)
 
-        # HUD
-        self._hud.update(self._score, self._player.run_speed, pd)
-
-        # Collision check
+        # 9. Collision Check
         if self._obstacles.check_collision(self._player):
-            self._trigger_game_over()
-
-        elif pd < C.POLICE_CATCH_DIST:
             self._trigger_game_over()
 
         return Task.cont
@@ -135,4 +151,3 @@ class GullyRun(ShowBase):
     def _trigger_game_over(self) -> None:
         self._game_over = True
         self._hud.show_gameover(self._score)
-

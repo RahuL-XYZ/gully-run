@@ -4,15 +4,15 @@ Game-wide tunable constants for Gully Run.
 """
 
 # ── Window ──────────────────────────────────────────────────────────────────
-WINDOW_TITLE = "Gully Run"
+WINDOW_TITLE = "Gully Run - 3D Endless Runner"
 WIN_W, WIN_H = 1280, 720
 
 # ── Road / Lanes ─────────────────────────────────────────────────────────────
-LANE_WIDTH      = 3.0          # world-unit width of one lane
-NUM_LANES       = 3
-ROAD_WIDTH      = LANE_WIDTH * NUM_LANES   # 9 units
-ROAD_SEGMENT_LEN = 40.0        # length of one tiled road segment
-NUM_SEGMENTS    = 6            # how many segments to keep alive at once
+LANE_WIDTH       = 3.2          # world-unit width of one lane
+NUM_LANES        = 3
+ROAD_WIDTH       = LANE_WIDTH * NUM_LANES   # 9.6 units
+ROAD_SEGMENT_LEN = 48.0         # length of one tiled road segment
+NUM_SEGMENTS     = 6            # active road segments
 
 # Lane X positions (centred on 0)
 LANE_X = [
@@ -23,43 +23,70 @@ LANE_X = [
 
 # ── Player ───────────────────────────────────────────────────────────────────
 PLAYER_START_LANE = 1          # start in centre lane
-PLAYER_RUN_SPEED  = 14.0       # forward units / second  (increases over time)
-SPEED_INCREMENT   = 0.5        # added every SPEED_UP_INTERVAL seconds
-SPEED_UP_INTERVAL = 5.0
-LANE_SWITCH_SPEED = 12.0       # lateral units / second while sliding
-JUMP_VELOCITY     = 10.0       # initial upward velocity
-GRAVITY           = -22.0      # downward acceleration
+PLAYER_RUN_SPEED  = 15.0       # forward units / second
+SPEED_INCREMENT   = 0.4        # added every SPEED_UP_INTERVAL seconds
+SPEED_UP_INTERVAL = 6.0
+MAX_RUN_SPEED     = 32.0       # top speed cap
+LANE_SWITCH_SPEED = 14.0       # lateral lerp rate
+JUMP_VELOCITY     = 10.5       # initial upward velocity
+GRAVITY           = -24.0      # downward acceleration
 
 # ── Camera ───────────────────────────────────────────────────────────────────
-CAM_OFFSET_Y     = -10.0       # behind player (Panda3D Y = forward)
-CAM_OFFSET_Z     =  5.0        # above player
-CAM_PITCH        = -15.0       # look slightly down
-CAM_SMOOTH       = 6.0         # lerp factor
-
-# ── Obstacles ────────────────────────────────────────────────────────────────
-OBSTACLE_SPAWN_DIST  = 50.0    # units ahead of player
-OBSTACLE_MIN_GAP     = 12.0    # min distance between consecutive spawns
-OBSTACLE_MAX_PER_ROW = 2       # max lanes blocked at once
+# Follow camera sits behind and above player
+CAM_OFFSET_Y     = -9.5        # behind player
+CAM_OFFSET_Z     =  4.8        # above player
+CAM_PITCH        = -14.0       # look slightly down
+CAM_SMOOTH       = 8.0         # lerp factor for follow
 
 # ── Police pursuer ───────────────────────────────────────────────────────────
-POLICE_BEHIND_DIST   = 12.0    # starts this far behind player
-POLICE_CATCH_DIST    = 1.5     # if closer than this → game over
+# Placed between camera and player so pursuer is prominently visible on screen!
+POLICE_BEHIND_DIST   = 4.6     # distance behind player
+POLICE_CATCH_DIST    = 1.0     # trigger game over if police overtakes
+
+# ── Obstacles ────────────────────────────────────────────────────────────────
+OBSTACLE_START_Y     = 36.0    # safe running distance before first obstacle
+OBSTACLE_SPAWN_DIST  = 60.0    # spawn horizon ahead of player
+OBSTACLE_MIN_GAP     = 14.0    # distance between consecutive obstacle rows
+OBSTACLE_MAX_PER_ROW = 2       # max lanes blocked at once (always leaves >= 1 lane)
 
 # ── Score ────────────────────────────────────────────────────────────────────
 SCORE_PER_METER  = 1           # score per world unit travelled
 
-# ── Colours (R, G, B, A) 0-1 ─────────────────────────────────────────────────
-COL_BG           = (0.05, 0.03, 0.10, 1)   # very dark purple sky
-COL_ROAD         = (0.12, 0.12, 0.14, 1)
-COL_LANE_MARK    = (0.9,  0.85, 0.2,  1)   # yellow lane markings
-COL_PLAYER       = (0.0,  1.0,  1.0,  1)   # cyan
-COL_POLICE       = (1.0,  0.2,  1.0,  1)   # magenta
-COL_OBSTACLE     = (1.0,  0.5,  0.0,  1)   # amber
-COL_BUILDING_A   = (0.15, 0.05, 0.25, 1)   # deep purple
-COL_BUILDING_B   = (0.05, 0.15, 0.20, 1)   # dark teal
-COL_CHAI         = (0.8,  0.4,  0.0,  1)   # warm orange chai stall
-COL_NEON_CYAN    = (0.0,  1.0,  1.0,  1)
-COL_NEON_MAG     = (1.0,  0.0,  1.0,  1)
-COL_TEXT         = (1.0,  1.0,  1.0,  1)
-COL_GAMEOVER_BG  = (0.0,  0.0,  0.0,  0.6)
+# ── Colours (R, G, B, A) ─────────────────────────────────────────────────────
+COL_BG           = (0.04, 0.02, 0.08, 1.0)   # midnight purple sky
+COL_ROAD         = (0.10, 0.10, 0.12, 1.0)   # dark asphalt
+COL_LANE_MARK    = (0.95, 0.82, 0.15, 1.0)   # Indian street yellow markings
+COL_CURB         = (0.80, 0.20, 0.10, 1.0)   # red/white curbs
 
+# ── Character Caricatures Colors ─────────────────────────────────────────────
+# NaMo Runner Caricature
+COL_MODI_KURTA   = (0.96, 0.94, 0.90, 1.0)   # white / off-white kurta
+COL_MODI_JACKET  = (0.96, 0.46, 0.08, 1.0)   # signature saffron Nehru jacket
+COL_MODI_BEARD   = (0.94, 0.94, 0.96, 1.0)   # styled silver-white beard
+COL_MODI_HAIR    = (0.90, 0.90, 0.92, 1.0)   # silver hair
+COL_MODI_GLASSES = (0.88, 0.72, 0.20, 1.0)   # rimless gold spectacles
+
+# Don Pursuer Caricature
+COL_TRUMP_SUIT   = (0.08, 0.12, 0.28, 1.0)   # navy blue suit
+COL_TRUMP_SHIRT  = (0.98, 0.98, 1.00, 1.0)   # white dress shirt
+COL_TRUMP_TIE    = (0.95, 0.06, 0.12, 1.0)   # iconic long red tie
+COL_TRUMP_HAIR   = (0.98, 0.82, 0.22, 1.0)   # signature golden blonde swooped hair
+
+COL_SKIN_INDIAN  = (0.92, 0.72, 0.58, 1.0)   # warm Indian skin tone
+COL_SKIN_BRIGHT  = (0.98, 0.76, 0.65, 1.0)   # peach skin tone
+
+# Pursuer Siren Lights
+COL_POLICE_SIREN_A = (1.00, 0.05, 0.20, 1.0) # emergency red
+COL_POLICE_SIREN_B = (0.05, 0.40, 1.00, 1.0) # emergency blue
+
+# Obstacles & Environment
+COL_OBSTACLE_LOW = (0.95, 0.45, 0.05, 1.0)   # barricade amber
+COL_OBSTACLE_TALL= (0.80, 0.15, 0.15, 1.0)   # stall maroon
+COL_BUILDING_A   = (0.14, 0.06, 0.22, 1.0)   # deep plum building
+COL_BUILDING_B   = (0.06, 0.14, 0.20, 1.0)   # dark teal building
+COL_CHAI         = (0.90, 0.45, 0.10, 1.0)   # warm chai stall orange
+COL_RICK_YELLOW  = (0.95, 0.80, 0.05, 1.0)   # classic auto-rickshaw yellow roof
+COL_RICK_GREEN   = (0.05, 0.55, 0.25, 1.0)   # classic auto-rickshaw green body
+COL_NEON_CYAN    = (0.00, 0.95, 1.00, 1.0)
+COL_NEON_MAG     = (1.00, 0.10, 0.70, 1.0)
+COL_TEXT         = (1.00, 1.00, 1.00, 1.0)

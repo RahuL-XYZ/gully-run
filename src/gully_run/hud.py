@@ -1,6 +1,6 @@
 """
 hud.py
-On-screen HUD: score, speed, police proximity, and game-over overlay.
+Heads-up display (HUD) showing score, speed, controls guide, and game-over dialog.
 """
 from __future__ import annotations
 
@@ -12,83 +12,129 @@ from . import constants as C
 
 
 class HUD:
-    """Manages all 2-D overlay elements."""
+    """Manages all 2D screen interface overlays."""
 
     def __init__(self) -> None:
+        # Distance / Score indicator
         self._score_text = OnscreenText(
-            text="Score: 0",
-            pos=(-1.25, 0.88),
+            text="DISTANCE: 0 m",
+            pos=(-1.28, 0.90),
             fg=C.COL_NEON_CYAN,
-            scale=0.07,
+            scale=0.065,
             align=TextNode.ALeft,
             mayChange=True,
-        )
-        self._speed_text = OnscreenText(
-            text="Speed: 0",
-            pos=(-1.25, 0.78),
-            fg=C.COL_NEON_MAG,
-            scale=0.055,
-            align=TextNode.ALeft,
-            mayChange=True,
-        )
-        self._police_text = OnscreenText(
-            text="",
-            pos=(0.0, -0.85),
-            fg=(1, 0.3, 0.3, 1),
-            scale=0.07,
-            align=TextNode.ACenter,
-            mayChange=True,
+            shadow=(0, 0, 0, 0.8),
         )
 
-        # Game-over overlay (hidden until needed)
+        # Runner speed
+        self._speed_text = OnscreenText(
+            text="SPEED: 0.0 m/s",
+            pos=(-1.28, 0.82),
+            fg=C.COL_MODI_JACKET,
+            scale=0.048,
+            align=TextNode.ALeft,
+            mayChange=True,
+            shadow=(0, 0, 0, 0.8),
+        )
+
+        # In-game control reminder (top right)
+        self._controls_hint = OnscreenText(
+            text="[A / D] Lane Switch   [SPACE] Jump",
+            pos=(1.28, 0.90),
+            fg=(0.90, 0.90, 0.95, 0.9),
+            scale=0.045,
+            align=TextNode.ARight,
+            mayChange=False,
+            shadow=(0, 0, 0, 0.8),
+        )
+
+        # Character role tag
+        self._char_tag = OnscreenText(
+            text="RUNNER: NaMo  vs  PURSUER: Don",
+            pos=(1.28, 0.83),
+            fg=C.COL_TRUMP_HAIR,
+            scale=0.040,
+            align=TextNode.ARight,
+            mayChange=False,
+            shadow=(0, 0, 0, 0.8),
+        )
+
+        # Police proximity / pursuit alert
+        self._police_alert = OnscreenText(
+            text="",
+            pos=(0.0, -0.85),
+            fg=C.COL_TRUMP_TIE,
+            scale=0.065,
+            align=TextNode.ACenter,
+            mayChange=True,
+            shadow=(0, 0, 0, 0.9),
+        )
+
+        # Game-over overlay container
         self._gameover_frame = DirectFrame(
-            frameSize=(-0.9, 0.9, -0.35, 0.35),
-            frameColor=(0, 0, 0, 0.75),
+            frameSize=(-0.90, 0.90, -0.45, 0.45),
+            frameColor=(0.04, 0.02, 0.08, 0.90),
             pos=(0, 0, 0),
         )
         self._gameover_frame.hide()
 
         self._gameover_title = OnscreenText(
-            text="GAME OVER",
-            pos=(0, 0.12),
-            fg=(1, 0.2, 0.2, 1),
-            scale=0.14,
+            text="BUSTED IN THE GULLY!",
+            pos=(0, 0.22),
+            fg=C.COL_TRUMP_TIE,
+            scale=0.12,
             align=TextNode.ACenter,
-            mayChange=True,
+            mayChange=False,
+            parent=self._gameover_frame,
+            shadow=(0, 0, 0, 1),
+        )
+
+        self._gameover_subtitle = OnscreenText(
+            text="The Chief Pursuer caught up to your sprint!",
+            pos=(0, 0.10),
+            fg=(0.85, 0.85, 0.90, 1.0),
+            scale=0.048,
+            align=TextNode.ACenter,
+            mayChange=False,
             parent=self._gameover_frame,
         )
+
         self._gameover_score = OnscreenText(
             text="",
-            pos=(0, -0.02),
-            fg=(1, 1, 1, 1),
-            scale=0.07,
+            pos=(0, -0.04),
+            fg=C.COL_NEON_CYAN,
+            scale=0.075,
             align=TextNode.ACenter,
             mayChange=True,
             parent=self._gameover_frame,
+            shadow=(0, 0, 0, 1),
         )
-        self._gameover_hint = OnscreenText(
-            text="Press R to restart  |  ESC to quit",
-            pos=(0, -0.18),
-            fg=(0.7, 0.7, 0.7, 1),
-            scale=0.055,
+
+        self._gameover_restart = OnscreenText(
+            text="Press [ R ] to Run Again   |   Press [ ESC ] to Quit",
+            pos=(0, -0.22),
+            fg=C.COL_LANE_MARK,
+            scale=0.052,
             align=TextNode.ACenter,
-            mayChange=True,
+            mayChange=False,
             parent=self._gameover_frame,
+            shadow=(0, 0, 0, 1),
         )
 
     # ------------------------------------------------------------------
 
     def update(self, score: int, speed: float, police_dist: float) -> None:
-        self._score_text.setText(f"Score: {score:,}")
-        self._speed_text.setText(f"Speed: {speed:.1f} m/s")
+        self._score_text.setText(f"DISTANCE: {score:,} m")
+        self._speed_text.setText(f"SPEED: {speed:.1f} m/s")
 
-        if police_dist < 6.0:
-            self._police_text.setText("⚠ POLICE CLOSING IN!")
+        if police_dist < 4.0:
+            self._police_alert.setText("⚠ PURSUER CLOSING IN!")
         else:
-            self._police_text.setText("")
+            self._police_alert.setText("")
 
     def show_gameover(self, score: int) -> None:
-        self._gameover_score.setText(f"Distance: {score:,} m")
+        self._police_alert.setText("")
+        self._gameover_score.setText(f"FINAL DISTANCE: {score:,} METERS")
         self._gameover_frame.show()
 
     def hide_gameover(self) -> None:
@@ -97,6 +143,7 @@ class HUD:
     def destroy(self) -> None:
         self._score_text.destroy()
         self._speed_text.destroy()
-        self._police_text.destroy()
+        self._controls_hint.destroy()
+        self._char_tag.destroy()
+        self._police_alert.destroy()
         self._gameover_frame.destroy()
-
