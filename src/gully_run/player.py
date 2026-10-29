@@ -132,19 +132,25 @@ class Player:
 
     # ---------------------------------------------------------------------- controls
 
-    def try_move_left(self) -> None:
+    def try_move_left(self) -> bool:
         if self.lane > 0:
             self.lane -= 1
             self.target_x = C.LANE_X[self.lane]
+            return True
+        return False
 
-    def try_move_right(self) -> None:
+    def try_move_right(self) -> bool:
         if self.lane < C.NUM_LANES - 1:
             self.lane += 1
             self.target_x = C.LANE_X[self.lane]
+            return True
+        return False
 
-    def try_jump(self) -> None:
+    def try_jump(self) -> bool:
         if self.z <= 0.02:  # Grounded check
             self.vel_z = C.JUMP_VELOCITY
+            return True
+        return False
 
     # ---------------------------------------------------------------------- update
 
