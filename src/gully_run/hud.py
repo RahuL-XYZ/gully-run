@@ -30,7 +30,7 @@ class HUD:
         self._speed_text = OnscreenText(
             text="SPEED: 0.0 m/s",
             pos=(-1.28, 0.82),
-            fg=C.COL_NEON_MAG,
+            fg=C.COL_MODI_JACKET,
             scale=0.048,
             align=TextNode.ALeft,
             mayChange=True,
@@ -41,8 +41,19 @@ class HUD:
         self._controls_hint = OnscreenText(
             text="[A / D] Lane Switch   [SPACE] Jump",
             pos=(1.28, 0.90),
-            fg=(0.85, 0.85, 0.85, 0.9),
+            fg=(0.90, 0.90, 0.95, 0.9),
             scale=0.045,
+            align=TextNode.ARight,
+            mayChange=False,
+            shadow=(0, 0, 0, 0.8),
+        )
+
+        # Character role tag
+        self._char_tag = OnscreenText(
+            text="RUNNER: NaMo  vs  PURSUER: Don",
+            pos=(1.28, 0.83),
+            fg=C.COL_TRUMP_HAIR,
+            scale=0.040,
             align=TextNode.ARight,
             mayChange=False,
             shadow=(0, 0, 0, 0.8),
@@ -52,8 +63,8 @@ class HUD:
         self._police_alert = OnscreenText(
             text="",
             pos=(0.0, -0.85),
-            fg=(1.0, 0.2, 0.3, 1.0),
-            scale=0.06,
+            fg=C.COL_TRUMP_TIE,
+            scale=0.065,
             align=TextNode.ACenter,
             mayChange=True,
             shadow=(0, 0, 0, 0.9),
@@ -61,17 +72,17 @@ class HUD:
 
         # Game-over overlay container
         self._gameover_frame = DirectFrame(
-            frameSize=(-0.85, 0.85, -0.42, 0.42),
-            frameColor=(0.04, 0.02, 0.08, 0.88),
+            frameSize=(-0.90, 0.90, -0.45, 0.45),
+            frameColor=(0.04, 0.02, 0.08, 0.90),
             pos=(0, 0, 0),
         )
         self._gameover_frame.hide()
 
         self._gameover_title = OnscreenText(
-            text="BUSTED!",
-            pos=(0, 0.20),
-            fg=(1.0, 0.15, 0.25, 1.0),
-            scale=0.13,
+            text="BUSTED IN THE GULLY!",
+            pos=(0, 0.22),
+            fg=C.COL_TRUMP_TIE,
+            scale=0.12,
             align=TextNode.ACenter,
             mayChange=False,
             parent=self._gameover_frame,
@@ -79,9 +90,9 @@ class HUD:
         )
 
         self._gameover_subtitle = OnscreenText(
-            text="The police caught you in the gully!",
-            pos=(0, 0.08),
-            fg=(0.8, 0.8, 0.8, 1.0),
+            text="The Chief Pursuer caught up to your sprint!",
+            pos=(0, 0.10),
+            fg=(0.85, 0.85, 0.90, 1.0),
             scale=0.048,
             align=TextNode.ACenter,
             mayChange=False,
@@ -90,7 +101,7 @@ class HUD:
 
         self._gameover_score = OnscreenText(
             text="",
-            pos=(0, -0.05),
+            pos=(0, -0.04),
             fg=C.COL_NEON_CYAN,
             scale=0.075,
             align=TextNode.ACenter,
@@ -102,7 +113,7 @@ class HUD:
         self._gameover_restart = OnscreenText(
             text="Press [ R ] to Run Again   |   Press [ ESC ] to Quit",
             pos=(0, -0.22),
-            fg=(0.95, 0.90, 0.20, 1.0),
+            fg=C.COL_LANE_MARK,
             scale=0.052,
             align=TextNode.ACenter,
             mayChange=False,
@@ -117,7 +128,7 @@ class HUD:
         self._speed_text.setText(f"SPEED: {speed:.1f} m/s")
 
         if police_dist < 4.0:
-            self._police_alert.setText("POLICE IS RIGHT BEHIND YOU!")
+            self._police_alert.setText("⚠ PURSUER CLOSING IN!")
         else:
             self._police_alert.setText("")
 
@@ -133,5 +144,6 @@ class HUD:
         self._score_text.destroy()
         self._speed_text.destroy()
         self._controls_hint.destroy()
+        self._char_tag.destroy()
         self._police_alert.destroy()
         self._gameover_frame.destroy()

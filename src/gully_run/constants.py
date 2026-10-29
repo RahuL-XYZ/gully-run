@@ -57,10 +57,29 @@ COL_BG           = (0.04, 0.02, 0.08, 1.0)   # midnight purple sky
 COL_ROAD         = (0.10, 0.10, 0.12, 1.0)   # dark asphalt
 COL_LANE_MARK    = (0.95, 0.82, 0.15, 1.0)   # Indian street yellow markings
 COL_CURB         = (0.80, 0.20, 0.10, 1.0)   # red/white curbs
-COL_PLAYER       = (0.00, 0.95, 0.95, 1.0)   # neon cyan runner
-COL_POLICE       = (0.85, 0.15, 0.35, 1.0)   # deep crimson/magenta uniform
+
+# ── Character Caricatures Colors ─────────────────────────────────────────────
+# NaMo Runner Caricature
+COL_MODI_KURTA   = (0.96, 0.94, 0.90, 1.0)   # white / off-white kurta
+COL_MODI_JACKET  = (0.96, 0.46, 0.08, 1.0)   # signature saffron Nehru jacket
+COL_MODI_BEARD   = (0.94, 0.94, 0.96, 1.0)   # styled silver-white beard
+COL_MODI_HAIR    = (0.90, 0.90, 0.92, 1.0)   # silver hair
+COL_MODI_GLASSES = (0.88, 0.72, 0.20, 1.0)   # rimless gold spectacles
+
+# Don Pursuer Caricature
+COL_TRUMP_SUIT   = (0.08, 0.12, 0.28, 1.0)   # navy blue suit
+COL_TRUMP_SHIRT  = (0.98, 0.98, 1.00, 1.0)   # white dress shirt
+COL_TRUMP_TIE    = (0.95, 0.06, 0.12, 1.0)   # iconic long red tie
+COL_TRUMP_HAIR   = (0.98, 0.82, 0.22, 1.0)   # signature golden blonde swooped hair
+
+COL_SKIN_INDIAN  = (0.92, 0.72, 0.58, 1.0)   # warm Indian skin tone
+COL_SKIN_BRIGHT  = (0.98, 0.76, 0.65, 1.0)   # peach skin tone
+
+# Pursuer Siren Lights
 COL_POLICE_SIREN_A = (1.00, 0.05, 0.20, 1.0) # emergency red
 COL_POLICE_SIREN_B = (0.05, 0.40, 1.00, 1.0) # emergency blue
+
+# Obstacles & Environment
 COL_OBSTACLE_LOW = (0.95, 0.45, 0.05, 1.0)   # barricade amber
 COL_OBSTACLE_TALL= (0.80, 0.15, 0.15, 1.0)   # stall maroon
 COL_BUILDING_A   = (0.14, 0.06, 0.22, 1.0)   # deep plum building

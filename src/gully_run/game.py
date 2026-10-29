@@ -15,7 +15,7 @@ from .camera import FollowCamera
 from .obstacles import ObstacleManager
 from .police import Police
 from .hud import HUD
-from .lighting import setup_lighting
+from .lighting import LightingManager
 
 
 class GullyRun(ShowBase):
@@ -37,8 +37,11 @@ class GullyRun(ShowBase):
         self.set_background_color(*C.COL_BG)
         self.disable_mouse()
 
+        # ── Hardware Shaders & Dynamic Shadows ─────────────────────────────
+        self.render.set_shader_auto()
+
         # ── Persistent Scene & Lighting ────────────────────────────────────
-        self._lights = setup_lighting(self.render)
+        self._lighting = LightingManager(self.render)
         self.world_root = self.render.attach_new_node("world_root")
 
         # ── 2D Interface ───────────────────────────────────────────────────
@@ -108,7 +111,7 @@ class GullyRun(ShowBase):
         dt = min(dt, 0.05)  # Cap delta time to prevent physics tunnels on lag spikes
 
         if self._game_over:
-            # During game over, police catches the stopped runner
+            # During game over, pursuer catches the stopped runner
             self._police.catch_player(self._player.y, dt)
             return Task.cont
 
@@ -124,17 +127,20 @@ class GullyRun(ShowBase):
         # 4. Update Police Pursuer
         self._police.update(dt, self._player.y, self._player.root.get_x())
 
-        # 5. Update Score (Distance traveled in meters)
+        # 5. Update Lighting / Shadow position tracking
+        self._lighting.update(self._player.y)
+
+        # 6. Update Score (Distance traveled in meters)
         self._score = max(0, int(self._player.y * C.SCORE_PER_METER))
 
-        # 6. Update Follow Camera
+        # 7. Update Follow Camera
         self._follow_cam.update(dt)
 
-        # 7. Check Police proximity & update HUD
+        # 8. Check Pursuer proximity & update HUD
         police_dist = self._police.distance_to_player(self._player.y)
         self._hud.update(self._score, self._player.run_speed, police_dist)
 
-        # 8. Collision Check
+        # 9. Collision Check
         if self._obstacles.check_collision(self._player):
             self._trigger_game_over()
 

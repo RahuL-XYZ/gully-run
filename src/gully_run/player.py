@@ -1,6 +1,7 @@
 """
 player.py
-Player runner avatar: stylized character with responsive lane switching and jump mechanics.
+Player runner avatar: stylized caricature of the runner in signature kurta & saffron Nehru jacket,
+with running arm swing, stride bobbing, and responsive 3-lane movement.
 """
 from __future__ import annotations
 
@@ -14,16 +15,16 @@ from .utils import make_box, lerp, clamp
 class Player:
     """
     Player character controller:
+    - Stylized caricature with kurta, saffron Nehru jacket, spectacles, and white beard
+    - Dynamic arm swing and footstep bobbing while sprinting
     - Automatic forward running speed with gradual acceleration
     - Responsive 3-lane lateral switching with smooth interpolation
-    - Realistic jump arc with gravity
-    - Running stride bob animation
-    - Bounding footprint for collision detection
+    - Jump arc with gravity
     """
 
     HALF_W  = 0.55
     HALF_D  = 0.50
-    HEIGHT  = 1.70
+    HEIGHT  = 1.75
 
     def __init__(self, parent: NodePath) -> None:
         self.root = NodePath("player_root")
@@ -45,26 +46,79 @@ class Player:
         self.root.set_pos(self.target_x, self.y, self.z)
 
     def _build_avatar(self) -> None:
-        """Construct a stylized futuristic desi street runner avatar."""
-        # Legs / Shoes base
-        shoes = make_box("player_shoes", 0.42, 0.35, 0.4, (0.1, 0.1, 0.15, 1.0))
-        shoes.reparent_to(self.root)
-        shoes.set_pos(0, 0, 0)
+        """Construct the stylized caricature avatar."""
+        # 1. Shoes / Mojaris
+        for sx in (-0.18, 0.18):
+            shoe = make_box(f"shoe_{sx}", 0.14, 0.28, 0.18, (0.22, 0.14, 0.10, 1.0))
+            shoe.reparent_to(self.root)
+            shoe.set_pos(sx, 0.04, 0.0)
 
-        # Torso / jacket (Neon Cyan)
-        torso = make_box("player_torso", 0.45, 0.38, 0.75, C.COL_PLAYER)
-        torso.reparent_to(self.root)
-        torso.set_pos(0, 0, 0.4)
+        # 2. White Pajama / Lower Legs
+        for lx in (-0.18, 0.18):
+            leg = make_box(f"leg_{lx}", 0.15, 0.18, 0.45, C.COL_MODI_KURTA)
+            leg.reparent_to(self.root)
+            leg.set_pos(lx, 0, 0.18)
 
-        # Head / Cap placeholder
-        head = make_box("player_head", 0.30, 0.30, 0.50, (0.95, 0.75, 0.55, 1.0))
+        # 3. White Kurta Body Base
+        kurta = make_box("kurta_base", 0.38, 0.26, 0.85, C.COL_MODI_KURTA)
+        kurta.reparent_to(self.root)
+        kurta.set_pos(0, 0, 0.40)
+
+        # 4. Signature Saffron Nehru Jacket / Modi Vest
+        vest = make_box("nehru_vest", 0.40, 0.28, 0.65, C.COL_MODI_JACKET)
+        vest.reparent_to(self.root)
+        vest.set_pos(0, 0, 0.58)
+
+        # Mandarin collar strip
+        collar = make_box("vest_collar", 0.26, 0.22, 0.12, C.COL_MODI_JACKET)
+        collar.reparent_to(self.root)
+        collar.set_pos(0, 0, 1.22)
+
+        # Pocket square / emblem accent
+        pocket = make_box("vest_pocket", 0.08, 0.02, 0.08, (0.98, 0.98, 0.98, 1.0))
+        pocket.reparent_to(self.root)
+        pocket.set_pos(0.22, -0.29, 1.0)
+
+        # 5. Head
+        head = make_box("player_head", 0.28, 0.26, 0.38, C.COL_SKIN_INDIAN)
         head.reparent_to(self.root)
-        head.set_pos(0, 0, 1.15)
+        head.set_pos(0, 0, 1.32)
 
-        # Neon headband / scarf (Neon Magenta)
-        band = make_box("player_headband", 0.32, 0.32, 0.12, C.COL_NEON_MAG)
-        band.reparent_to(self.root)
-        band.set_pos(0, 0, 1.48)
+        # 6. Signature Silver Hair (styled parted on top & back)
+        hair = make_box("player_hair", 0.30, 0.28, 0.14, C.COL_MODI_HAIR)
+        hair.reparent_to(self.root)
+        hair.set_pos(0, 0.02, 1.62)
+
+        hair_back = make_box("hair_back", 0.29, 0.10, 0.25, C.COL_MODI_HAIR)
+        hair_back.reparent_to(self.root)
+        hair_back.set_pos(0, 0.18, 1.45)
+
+        # 7. Signature Silver-White Trimmed Beard & Moustache
+        beard = make_box("player_beard", 0.26, 0.16, 0.22, C.COL_MODI_BEARD)
+        beard.reparent_to(self.root)
+        beard.set_pos(0, -0.16, 1.26)
+
+        # 8. Golden Rimless Spectacles
+        glasses_l = make_box("glass_l", 0.09, 0.04, 0.07, C.COL_MODI_GLASSES)
+        glasses_l.reparent_to(self.root)
+        glasses_l.set_pos(-0.13, -0.26, 1.50)
+
+        glasses_r = make_box("glass_r", 0.09, 0.04, 0.07, C.COL_MODI_GLASSES)
+        glasses_r.reparent_to(self.root)
+        glasses_r.set_pos(0.13, -0.26, 1.50)
+
+        bridge = make_box("glass_bridge", 0.06, 0.03, 0.02, C.COL_MODI_GLASSES)
+        bridge.reparent_to(self.root)
+        bridge.set_pos(0, -0.26, 1.51)
+
+        # 9. Left & Right Arms (stored for running swing animation)
+        self.arm_left = make_box("arm_l", 0.12, 0.14, 0.55, C.COL_MODI_KURTA)
+        self.arm_left.reparent_to(self.root)
+        self.arm_left.set_pos(-0.46, 0, 0.65)
+
+        self.arm_right = make_box("arm_r", 0.12, 0.14, 0.55, C.COL_MODI_KURTA)
+        self.arm_right.reparent_to(self.root)
+        self.arm_right.set_pos(0.46, 0, 0.65)
 
     # ---------------------------------------------------------------------- properties
 
@@ -117,11 +171,20 @@ class Player:
             self.z = 0.0
             self.vel_z = 0.0
 
-        # Running step bob animation when grounded
+        # Running step bob and arm swing animation
         bob = 0.0
         if self.z <= 0.01:
-            self._anim_phase += dt * (self._run_speed * 1.2)
+            self._anim_phase += dt * (self._run_speed * 1.1)
             bob = abs(math.sin(self._anim_phase)) * 0.12
+
+            # Dynamic arm swing
+            swing = math.sin(self._anim_phase) * 0.22
+            self.arm_left.set_pos(-0.46, swing, 0.65)
+            self.arm_right.set_pos(0.46, -swing, 0.65)
+        else:
+            # Jumping pose (arms slightly raised forward)
+            self.arm_left.set_pos(-0.46, 0.18, 0.72)
+            self.arm_right.set_pos(0.46, 0.18, 0.72)
 
         self.root.set_y(self.y)
         self.root.set_z(self.z + bob)
