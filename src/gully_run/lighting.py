@@ -1,51 +1,61 @@
 """
 lighting.py
-Scene lighting setup for Gully Run.
+Scene lighting setup for Gully Run's neon-accented night market aesthetic.
 """
 from __future__ import annotations
 
 from panda3d.core import (
     AmbientLight, DirectionalLight, PointLight,
-    LColor, LVector3, NodePath,
+    LColor, NodePath,
 )
 
 
-def setup_lighting(render: NodePath) -> None:
-    """Attach ambient + directional lights to render; add a couple of neon point lights."""
+def setup_lighting(render: NodePath) -> list[NodePath]:
+    """
+    Configure atmospheric night lighting with neon highlights.
+    Returns the list of light NodePaths.
+    """
+    lights: list[NodePath] = []
 
-    # Ambient – very dark blue-purple
-    alight = AmbientLight("ambient")
-    alight.set_color(LColor(0.08, 0.06, 0.14, 1))
+    # 1. Ambient – deep night indigo
+    alight = AmbientLight("ambient_light")
+    alight.set_color(LColor(0.18, 0.14, 0.26, 1.0))
     alnp = render.attach_new_node(alight)
     render.set_light(alnp)
+    lights.append(alnp)
 
-    # Primary directional – cool white from upper-left
-    dlight = DirectionalLight("sun")
-    dlight.set_color(LColor(0.7, 0.75, 0.9, 1))
+    # 2. Main street directional moonlight
+    dlight = DirectionalLight("moon_light")
+    dlight.set_color(LColor(0.85, 0.88, 0.95, 1.0))
     dlnp = render.attach_new_node(dlight)
-    dlnp.set_hpr(-45, -60, 0)
+    dlnp.set_hpr(-40, -55, 0)
     render.set_light(dlnp)
+    lights.append(dlnp)
 
-    # Fill light from the right – warm orange (chai-stall warmth)
-    flight = DirectionalLight("fill")
-    flight.set_color(LColor(0.3, 0.2, 0.05, 1))
-    flnp = render.attach_new_node(flight)
-    flnp.set_hpr(135, -30, 0)
-    render.set_light(flnp)
+    # 3. Warm chai-stall street glow
+    warm_fill = DirectionalLight("warm_fill")
+    warm_fill.set_color(LColor(0.40, 0.24, 0.10, 1.0))
+    wlnp = render.attach_new_node(warm_fill)
+    wlnp.set_hpr(140, -35, 0)
+    render.set_light(wlnp)
+    lights.append(wlnp)
 
-    # Neon cyan point light near road centre
-    plight_c = PointLight("neon_cyan")
-    plight_c.set_color(LColor(0.0, 0.6, 0.8, 1))
-    plight_c.set_attenuation((1, 0.05, 0.01))
-    plnp_c = render.attach_new_node(plight_c)
-    plnp_c.set_pos(0, 20, 4)
-    render.set_light(plnp_c)
+    # 4. Neon cyan accent point light
+    neon_cyan = PointLight("neon_cyan_point")
+    neon_cyan.set_color(LColor(0.1, 0.8, 1.0, 1.0))
+    neon_cyan.set_attenuation((1.0, 0.04, 0.005))
+    ncnp = render.attach_new_node(neon_cyan)
+    ncnp.set_pos(0, 15, 5)
+    render.set_light(ncnp)
+    lights.append(ncnp)
 
-    # Neon magenta point light offset left
-    plight_m = PointLight("neon_mag")
-    plight_m.set_color(LColor(0.8, 0.0, 0.6, 1))
-    plight_m.set_attenuation((1, 0.05, 0.01))
-    plnp_m = render.attach_new_node(plight_m)
-    plnp_m.set_pos(-5, 15, 4)
-    render.set_light(plnp_m)
+    # 5. Neon magenta accent point light
+    neon_mag = PointLight("neon_mag_point")
+    neon_mag.set_color(LColor(1.0, 0.1, 0.8, 1.0))
+    neon_mag.set_attenuation((1.0, 0.04, 0.005))
+    nmnp = render.attach_new_node(neon_mag)
+    nmnp.set_pos(-6, 20, 5)
+    render.set_light(nmnp)
+    lights.append(nmnp)
 
+    return lights
