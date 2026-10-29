@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "gully-run"
+version = "0.1.0"
+description = "Gully Run – stylized 3D endless runner set in a fictional Indian city"
+requires-python = ">=3.10"
+dependencies = [
+    "panda3d>=1.10.14",
+]
+
+[project.scripts]
+gully-run = "gully_run.game:GullyRun"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
