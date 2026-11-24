@@ -54,8 +54,19 @@ python -m gully_run.game
 | **S** / **↓** | Crouch / slide under overhead barriers (or fast-fall mid-air) |
 | **A** / **←** | Move left one lane |
 | **D** / **→** | Move right one lane |
-| **R** | Restart (after game-over) |
+| **P** | Pause / resume game |
+| **R** | Restart (after game-over or while paused) |
 | **Esc** | Quit |
+
+---
+
+## Power-Ups & Collectibles
+
+- 🪙 **Gold Coins**: Collect floating coins and jump-arc trails to boost your score!
+- 🧲 **Coin Magnet**: Automatically pulls all nearby coins towards you for 8 seconds.
+- 🚀 **Turbo Rush**: 6 seconds of invincibility and +30% sprint speed—smash right through obstacles!
+- ⚡ **2X Multiplier**: Doubles all coin pickups and distance rewards for 10 seconds.
+- 🏆 **High Score Record**: Automatically saved to `highscore.json`. Beat your record to earn the New Record banner!
 
 ---
 

@@ -91,6 +91,15 @@ COL_BUILDING_B   = (0.06, 0.14, 0.20, 1.0)   # dark teal building
 COL_CHAI         = (0.90, 0.45, 0.10, 1.0)   # warm chai stall orange
 COL_RICK_YELLOW  = (0.95, 0.80, 0.05, 1.0)   # classic auto-rickshaw yellow roof
 COL_RICK_GREEN   = (0.05, 0.55, 0.25, 1.0)   # classic auto-rickshaw green body
+# ── Power-Ups & Collectibles ─────────────────────────────────────────────────
+MAGNET_DURATION      = 8.0     # seconds coin magnet lasts
+TURBO_DURATION       = 6.0     # seconds invincible turbo sprint lasts
+MULTIPLIER_DURATION  = 10.0    # seconds 2x multiplier lasts
+COL_COIN             = (1.00, 0.85, 0.15, 1.0)   # gold coin
+COL_POWER_MAGNET     = (0.20, 0.65, 1.00, 1.0)   # electric blue magnet
+COL_POWER_TURBO      = (1.00, 0.35, 0.10, 1.0)   # fiery orange turbo
+COL_POWER_2X         = (0.25, 0.95, 0.35, 1.0)   # emerald green 2x
+
 COL_NEON_CYAN    = (0.00, 0.95, 1.00, 1.0)
 COL_NEON_MAG     = (1.00, 0.10, 0.70, 1.0)
 COL_TEXT         = (1.00, 1.00, 1.00, 1.0)

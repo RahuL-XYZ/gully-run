@@ -89,6 +89,29 @@ def ensure_audio_assets() -> None:
 
         _generate_wav(crouch_path, 22050, 0.25, crouch_gen)
 
+    coin_path = AUDIO_DIR / "coin_pickup.wav"
+    if not coin_path.exists():
+        # Bright high-pitched coin chime (987 Hz -> 1318 Hz B5 to E6 bell)
+        def coin_gen(t: float, dur: float) -> float:
+            f1 = 987.77 if t < 0.08 else 1318.51
+            harm = math.sin(2.0 * math.pi * f1 * t) * 0.7 + math.sin(2.0 * math.pi * f1 * 2.0 * t) * 0.25
+            env = math.exp(-t * 12.0)
+            return harm * env * 0.60
+
+        _generate_wav(coin_path, 22050, 0.20, coin_gen)
+
+    powerup_path = AUDIO_DIR / "powerup.wav"
+    if not powerup_path.exists():
+        # Ascending 4-tone arcade arpeggio
+        def powerup_gen(t: float, dur: float) -> float:
+            notes = [523.25, 659.25, 783.99, 1046.50]  # C5, E5, G5, C6
+            step = min(int(t / 0.08), len(notes) - 1)
+            freq = notes[step]
+            env = math.exp(-(t % 0.08) * 8.0)
+            return math.sin(2.0 * math.pi * freq * t) * env * 0.75
+
+        _generate_wav(powerup_path, 22050, 0.35, powerup_gen)
+
     music_path = AUDIO_DIR / "bg_music.wav"
     if not music_path.exists():
         # Upbeat rhythmic 4-bar looping arcade bassline & kick beat (128 BPM)
@@ -135,6 +158,8 @@ class AudioManager:
         self._sfx_gameover = None
         self._sfx_switch = None
         self._sfx_crouch = None
+        self._sfx_coin = None
+        self._sfx_powerup = None
 
         # Ensure default audio files exist on disk
         ensure_audio_assets()
@@ -176,6 +201,20 @@ class AudioManager:
                 self._sfx_crouch = base.loader.load_sfx(fn)
                 if self._sfx_crouch:
                     self._sfx_crouch.set_volume(0.70)
+
+            coin_file = AUDIO_DIR / "coin_pickup.wav"
+            if coin_file.exists():
+                fn = Filename.from_os_specific(str(coin_file))
+                self._sfx_coin = base.loader.load_sfx(fn)
+                if self._sfx_coin:
+                    self._sfx_coin.set_volume(0.75)
+
+            powerup_file = AUDIO_DIR / "powerup.wav"
+            if powerup_file.exists():
+                fn = Filename.from_os_specific(str(powerup_file))
+                self._sfx_powerup = base.loader.load_sfx(fn)
+                if self._sfx_powerup:
+                    self._sfx_powerup.set_volume(0.85)
         except Exception as e:
             print(f"[Audio Warning] Could not initialize some audio assets: {e}")
 
@@ -212,12 +251,22 @@ class AudioManager:
         if self._sfx_crouch:
             self._sfx_crouch.play()
 
+    def play_coin(self) -> None:
+        """Play bright coin collection chime."""
+        if self._sfx_coin:
+            self._sfx_coin.play()
+
+    def play_powerup(self) -> None:
+        """Play power-up activation arpeggio."""
+        if self._sfx_powerup:
+            self._sfx_powerup.play()
+
     def set_music_volume(self, vol: float) -> None:
         if self._bg_music:
             self._bg_music.set_volume(max(0.0, min(1.0, vol)))
 
     def set_sfx_volume(self, vol: float) -> None:
         vol = max(0.0, min(1.0, vol))
-        for sfx in (self._sfx_jump, self._sfx_gameover, self._sfx_switch, self._sfx_crouch):
+        for sfx in (self._sfx_jump, self._sfx_gameover, self._sfx_switch, self._sfx_crouch, self._sfx_coin, self._sfx_powerup):
             if sfx:
                 sfx.set_volume(vol)

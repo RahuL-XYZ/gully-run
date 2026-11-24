@@ -27,3 +27,6 @@ build/
 .DS_Store
 Thumbs.db
 
+# Local game save files
+highscore.json
+
