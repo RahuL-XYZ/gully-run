@@ -77,6 +77,18 @@ def ensure_audio_assets() -> None:
 
         _generate_wav(switch_path, 22050, 0.08, switch_gen)
 
+    crouch_path = AUDIO_DIR / "crouch_slide.wav"
+    if not crouch_path.exists():
+        # Fast rushing friction slide / swoosh sound
+        def crouch_gen(t: float, dur: float) -> float:
+            freq = 320.0 * math.exp(-t * 3.5) + 90.0
+            noise = (math.sin(t * 4321.0) % 0.4) - 0.2
+            tone = math.sin(2.0 * math.pi * freq * t)
+            env = math.exp(-t * 4.0)
+            return (tone * 0.4 + noise * 0.6) * env * 0.70
+
+        _generate_wav(crouch_path, 22050, 0.25, crouch_gen)
+
     music_path = AUDIO_DIR / "bg_music.wav"
     if not music_path.exists():
         # Upbeat rhythmic 4-bar looping arcade bassline & kick beat (128 BPM)
@@ -122,6 +134,7 @@ class AudioManager:
         self._sfx_jump = None
         self._sfx_gameover = None
         self._sfx_switch = None
+        self._sfx_crouch = None
 
         # Ensure default audio files exist on disk
         ensure_audio_assets()
@@ -156,6 +169,13 @@ class AudioManager:
                 self._sfx_switch = base.loader.load_sfx(fn)
                 if self._sfx_switch:
                     self._sfx_switch.set_volume(0.40)
+
+            crouch_file = AUDIO_DIR / "crouch_slide.wav"
+            if crouch_file.exists():
+                fn = Filename.from_os_specific(str(crouch_file))
+                self._sfx_crouch = base.loader.load_sfx(fn)
+                if self._sfx_crouch:
+                    self._sfx_crouch.set_volume(0.70)
         except Exception as e:
             print(f"[Audio Warning] Could not initialize some audio assets: {e}")
 
@@ -187,12 +207,17 @@ class AudioManager:
         if self._sfx_switch:
             self._sfx_switch.play()
 
+    def play_crouch(self) -> None:
+        """Play slide / crouch friction swoosh sound."""
+        if self._sfx_crouch:
+            self._sfx_crouch.play()
+
     def set_music_volume(self, vol: float) -> None:
         if self._bg_music:
             self._bg_music.set_volume(max(0.0, min(1.0, vol)))
 
     def set_sfx_volume(self, vol: float) -> None:
         vol = max(0.0, min(1.0, vol))
-        for sfx in (self._sfx_jump, self._sfx_gameover, self._sfx_switch):
+        for sfx in (self._sfx_jump, self._sfx_gameover, self._sfx_switch, self._sfx_crouch):
             if sfx:
                 sfx.set_volume(vol)

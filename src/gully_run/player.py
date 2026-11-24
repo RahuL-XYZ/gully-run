@@ -39,6 +39,9 @@ class Player:
         self.z: float = 0.0
         self.vel_z: float = 0.0
 
+        self.is_crouching: bool = False
+        self.crouch_timer: float = 0.0
+
         self._run_speed = C.PLAYER_RUN_SPEED
         self._speed_timer = 0.0
         self._anim_phase = 0.0
@@ -147,10 +150,33 @@ class Player:
         return False
 
     def try_jump(self) -> bool:
+        # If crouching, jump can cancel crouch
+        if self.is_crouching:
+            self._end_crouch()
+
         if self.z <= 0.02:  # Grounded check
             self.vel_z = C.JUMP_VELOCITY
             return True
         return False
+
+    def try_crouch(self) -> bool:
+        """Trigger slide / crouch. If in mid-air, fast-falls to ground quickly."""
+        if self.z > 0.02:
+            # Fast-fall / dive down from jump
+            self.vel_z = -28.0
+
+        self.is_crouching = True
+        self.crouch_timer = C.CROUCH_DURATION
+        # Squat / slide visual transformation
+        self.root.set_scale(1.0, 1.25, 0.48)
+        self.root.set_p(15.0)  # Tilt forward into slide
+        return True
+
+    def _end_crouch(self) -> None:
+        self.is_crouching = False
+        self.crouch_timer = 0.0
+        self.root.set_scale(1.0, 1.0, 1.0)
+        self.root.set_p(0.0)
 
     # ---------------------------------------------------------------------- update
 
@@ -177,9 +203,19 @@ class Player:
             self.z = 0.0
             self.vel_z = 0.0
 
+        # Crouch timer update
+        if self.is_crouching:
+            self.crouch_timer -= dt
+            if self.crouch_timer <= 0.0:
+                self._end_crouch()
+
         # Running step bob and arm swing animation
         bob = 0.0
-        if self.z <= 0.01:
+        if self.is_crouching:
+            # Low slide pose
+            self.arm_left.set_pos(-0.46, -0.25, 0.45)
+            self.arm_right.set_pos(0.46, 0.35, 0.45)
+        elif self.z <= 0.01:
             self._anim_phase += dt * (self._run_speed * 1.1)
             bob = abs(math.sin(self._anim_phase)) * 0.12
 

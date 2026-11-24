@@ -30,6 +30,9 @@ MAX_RUN_SPEED     = 32.0       # top speed cap
 LANE_SWITCH_SPEED = 14.0       # lateral lerp rate
 JUMP_VELOCITY     = 10.5       # initial upward velocity
 GRAVITY           = -24.0      # downward acceleration
+CROUCH_DURATION   = 0.75       # duration in seconds of slide/crouch
+PLAYER_STAND_HEIGHT = 1.75     # regular standing height
+PLAYER_CROUCH_HEIGHT = 0.85    # height while sliding/crouching
 
 # ── Camera ───────────────────────────────────────────────────────────────────
 # Follow camera sits behind and above player
@@ -80,8 +83,9 @@ COL_POLICE_SIREN_A = (1.00, 0.05, 0.20, 1.0) # emergency red
 COL_POLICE_SIREN_B = (0.05, 0.40, 1.00, 1.0) # emergency blue
 
 # Obstacles & Environment
-COL_OBSTACLE_LOW = (0.95, 0.45, 0.05, 1.0)   # barricade amber
-COL_OBSTACLE_TALL= (0.80, 0.15, 0.15, 1.0)   # stall maroon
+COL_OBSTACLE_LOW      = (0.95, 0.45, 0.05, 1.0)   # barricade amber
+COL_OBSTACLE_TALL     = (0.80, 0.15, 0.15, 1.0)   # stall maroon
+COL_OBSTACLE_OVERHEAD = (0.95, 0.85, 0.12, 1.0)   # overhead toll/scaffold hazard yellow
 COL_BUILDING_A   = (0.14, 0.06, 0.22, 1.0)   # deep plum building
 COL_BUILDING_B   = (0.06, 0.14, 0.20, 1.0)   # dark teal building
 COL_CHAI         = (0.90, 0.45, 0.10, 1.0)   # warm chai stall orange

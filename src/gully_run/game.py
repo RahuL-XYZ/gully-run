@@ -61,7 +61,11 @@ class GullyRun(ShowBase):
         self.accept("arrow_left", self._on_left)
         self.accept("d", self._on_right)
         self.accept("arrow_right", self._on_right)
+        self.accept("w", self._on_jump)
+        self.accept("arrow_up", self._on_jump)
         self.accept("space", self._on_jump)
+        self.accept("s", self._on_crouch)
+        self.accept("arrow_down", self._on_crouch)
         self.accept("r", self._on_restart)
 
         # ── Main Game Loop Task ────────────────────────────────────────────
@@ -106,6 +110,11 @@ class GullyRun(ShowBase):
         if not self._game_over:
             if self._player.try_jump():
                 self._audio.play_jump()
+
+    def _on_crouch(self) -> None:
+        if not self._game_over:
+            if self._player.try_crouch():
+                self._audio.play_crouch()
 
     def _on_restart(self) -> None:
         if self._game_over:

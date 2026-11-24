@@ -50,9 +50,10 @@ python -m gully_run.game
 
 | Key | Action |
 |-----|--------|
+| **W** / **Space** / **↑** | Jump over low road barricades |
+| **S** / **↓** | Crouch / slide under overhead barriers (or fast-fall mid-air) |
 | **A** / **←** | Move left one lane |
 | **D** / **→** | Move right one lane |
-| **Space** | Jump |
 | **R** | Restart (after game-over) |
 | **Esc** | Quit |
 

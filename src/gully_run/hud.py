@@ -39,7 +39,7 @@ class HUD:
 
         # In-game control reminder (top right)
         self._controls_hint = OnscreenText(
-            text="[A / D] Lane Switch   [SPACE] Jump",
+            text="[W / Space] Jump   [S] Crouch   [A / D] Switch",
             pos=(1.28, 0.90),
             fg=(0.90, 0.90, 0.95, 0.9),
             scale=0.045,
